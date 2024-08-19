@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OauthJWT.Context;
 using OauthJWT.Services;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
 namespace OauthJWT
@@ -46,6 +47,15 @@ namespace OauthJWT
             }).AddJwtBearer(jwtOptions =>
             {
                 jwtOptions.TokenValidationParameters = tokenValidation;
+                jwtOptions.Events = new JwtBearerEvents();
+                jwtOptions.Events.OnTokenValidated = async (Context) =>
+                {
+                    var ipAddress = Context.Request.HttpContext.Connection.RemoteIpAddress!.ToString();
+                    var jwtService = Context.Request.HttpContext.RequestServices.GetService<IJwtService>();
+                    var jwtToken = Context.SecurityToken as JwtSecurityToken;
+                    if (!await jwtService!.IsTokenValid(jwtToken!.RawData, ipAddress))
+                        Context.Fail("Inavlid Token Details");
+                };
             });
 
             builder.Services.AddTransient<IJwtService, JwtService>();

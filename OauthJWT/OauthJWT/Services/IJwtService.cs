@@ -4,6 +4,8 @@ namespace OauthJWT.Services
 {
     public interface IJwtService
     {
-        Task<string> GetTokenAsync(AuthRequest request);
+        Task<AuthRespond> GetTokenAsync(AuthRequest request, string ipAddress);
+        Task<AuthRespond> GetRefreshTokenAsync(string ipAddress, int userId, string userName);
+        Task<bool> IsTokenValid(string accessToken, string ipAddress);
     }
 }
